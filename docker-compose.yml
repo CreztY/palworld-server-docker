@@ -2,33 +2,62 @@ version: '3.8'
 
 services:
   palworld-server:
-    build: .
+    image: crezty/palworld-server:latest
     container_name: palworld-server
     restart: unless-stopped
     ports:
-      - "8211:8211/udp"
-      - "8212:8212/udp" 
-      - "8213:8213/udp"
-      - "25575:25575/tcp"  # RCON Port
+      - "8211:8211/udp"    # Main game port
+      - "8212:8212/udp"    # Additional game port  
+      - "8213:8213/udp"    # Additional game port
+      - "25575:25575/tcp"  # RCON port for server management
     volumes:
-      - palworld_data:/palworld/data
-      - palworld_config:/palworld/config
+      - palworld_data:/palworld/data        # Save games and world data
+      - palworld_config:/palworld/config    # Server configuration files
     environment:
-      - SERVER_NAME=My Palworld Server
-      - SERVER_DESCRIPTION=A Docker-based Palworld server
-      - SERVER_PASSWORD=
-      - ADMIN_PASSWORD=admin123
-      - MAX_PLAYERS=32
-      - PUBLIC_PORT=8211
-      - RCON_ENABLED=true
-      - RCON_PORT=25575
-      - UPDATE_ON_START=false
-      - RECREATE_CONFIG=false
-    stdin_open: true
-    tty: true
+      # Basic Server Settings
+      - SERVER_NAME=My Awesome Palworld Server
+      - SERVER_DESCRIPTION=Welcome to my Palworld server! Have fun!
+      - SERVER_PASSWORD=                    # Leave empty for no password, or set a password
+      - MAX_PLAYERS=32                      # Maximum players (1-32)
+      
+      # Admin Settings
+      - ADMIN_PASSWORD=admin123             # CHANGE THIS! Used for RCON access
+      
+      # Network Settings
+      - PUBLIC_PORT=8211                    # Public port (should match the port mapping above)
+      - RCON_ENABLED=true                   # Enable RCON for server management
+      - RCON_PORT=25575                     # RCON port (should match the port mapping above)
+      
+      # Update Settings
+      - UPDATE_ON_START=false               # Set to true to update server files on container start
+      - RECREATE_CONFIG=false               # Set to true to recreate config file on start
+    
+    # Resource limits (optional but recommended)
+    deploy:
+      resources:
+        limits:
+          memory: 8G                        # Adjust based on your server capacity
+        reservations:
+          memory: 4G
+    
+    # Health check to monitor server status
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f PalServer || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 300s                    # Wait 5 minutes for initial server startup
+    
+    stdin_open: true                        # Keep STDIN open
+    tty: true                              # Allocate a pseudo-TTY
 
 volumes:
   palworld_data:
     driver: local
   palworld_config:
     driver: local
+
+# Optional: Network configuration for advanced users
+# networks:
+#   palworld_network:
+#     driver: bridge
