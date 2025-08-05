@@ -12,7 +12,7 @@ Get your Palworld dedicated server running in minutes!
 
 1. **Download the docker-compose.yml file**
 ```bash
-curl -O https://raw.githubusercontent.com/yourusername/palworld-docker/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/CreztY/palworld-server-docker/main/docker-compose.yml
 ```
 
 2. **Edit the configuration (optional)**
@@ -135,7 +135,7 @@ netstat -tulpn | grep :8211
 ## 🔄 Need Help?
 
 - Check the [full documentation](https://hub.docker.com/r/crezty/palworld-server)
-- Report issues on [GitHub](https://github.com/yourusername/palworld-docker/issues)
+- Report issues on [GitHub](https://github.com/CreztY/palworld-server-docker/issues)
 
 ---
 
