@@ -1,182 +1,142 @@
-# Palworld Dedicated Server Docker
+# 🎮 Palworld Server - Quick Start Guide
 
-A Docker container for running a Palworld dedicated server with easy configuration and persistent data storage.
+Get your Palworld dedicated server running in minutes!
 
-## 🚀 Quick Start
+## 📋 Prerequisites
 
-### Using Docker Run
+- Docker and Docker Compose installed on your system
+- At least 8GB RAM available
+- Ports 8211-8213 (UDP) and 25575 (TCP) available
 
+## 🚀 Quick Setup
+
+1. **Download the docker-compose.yml file**
 ```bash
-docker run -d \
-  --name palworld-server \
-  -p 8211:8211/udp \
-  -p 8212:8212/udp \
-  -p 8213:8213/udp \
-  -p 25575:25575/tcp \
-  -v palworld_data:/palworld/data \
-  -v palworld_config:/palworld/config \
-  -e SERVER_NAME="My Palworld Server" \
-  -e MAX_PLAYERS=32 \
-  -e ADMIN_PASSWORD=admin123 \
-  yourusername/palworld-server:latest
+curl -O https://raw.githubusercontent.com/yourusername/palworld-docker/main/docker-compose.yml
 ```
 
-### Using Docker Compose
+2. **Edit the configuration (optional)**
 ```bash
-version: '3.8'
+nano docker-compose.yml
+```
+- Change `SERVER_NAME` to your desired server name
+- Set `SERVER_PASSWORD` if you want a private server
+- **IMPORTANT**: Change `ADMIN_PASSWORD` for security!
 
-services:
-  palworld-server:
-    build: .
-    container_name: palworld-server
-    restart: unless-stopped
-    ports:
-      - "8211:8211/udp"
-      - "8212:8212/udp" 
-      - "8213:8213/udp"
-      - "25575:25575/tcp"  # RCON Port
-    volumes:
-      - palworld_data:/palworld/data
-      - palworld_config:/palworld/config
-    environment:
-      - SERVER_NAME=My Palworld Server
-      - SERVER_DESCRIPTION=A Docker-based Palworld server
-      - SERVER_PASSWORD=
-      - ADMIN_PASSWORD=admin123
-      - MAX_PLAYERS=32
-      - PUBLIC_PORT=8211
-      - RCON_ENABLED=true
-      - RCON_PORT=25575
-      - UPDATE_ON_START=false
-      - RECREATE_CONFIG=false
-    stdin_open: true
-    tty: true
-
-volumes:
-  palworld_data:
-    driver: local
-  palworld_config:
-    driver: local
+3. **Start the server**
+```bash
+docker-compose up -d
 ```
 
-1. copy the code above and paste it in a file named `docker-compose.yml`
-2. Customize the environment variables in the compose file
-3. Run: `docker-compose up -d`
+4. **Check server status**
+```bash
+docker-compose logs -f palworld-server
+```
 
-## 📋 Environment Variables
+## 🎯 Server will be ready when you see:
+```
+Starting Palworld Dedicated Server...
+Server configuration:
+  Server Name: My Awesome Palworld Server
+  Max Players: 32
+  Public Port: 8211
+```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SERVER_NAME` | `Palworld Docker Server` | Name of your server |
-| `SERVER_DESCRIPTION` | `A Palworld server running in Docker` | Server description |
-| `SERVER_PASSWORD` | `` (empty) | Password to join the server (leave empty for no password) |
-| `ADMIN_PASSWORD` | `admin123` | Admin password for RCON |
-| `MAX_PLAYERS` | `32` | Maximum number of players |
-| `PUBLIC_PORT` | `8211` | Public port for the server |
-| `RCON_ENABLED` | `true` | Enable RCON for server management |
-| `RCON_PORT` | `25575` | RCON port |
-| `UPDATE_ON_START` | `false` | Update server files on container start |
-| `RECREATE_CONFIG` | `false` | Recreate config file on start |
+## 🌐 Connect to Your Server
 
-## 🔧 Ports
+- **Server Address**: `YOUR_SERVER_IP:8211`
+- **Password**: Whatever you set in `SERVER_PASSWORD` (or none if empty)
 
-| Port | Protocol | Description |
-|------|----------|-------------|
-| 8211 | UDP | Game port |
-| 8212 | UDP | Additional game port |
-| 8213 | UDP | Additional game port |
-| 25575 | TCP | RCON port (if enabled) |
+## ⚙️ Common Configurations
 
-## 💾 Volumes
+### Private Server with Password
+```yaml
+environment:
+  - SERVER_PASSWORD=mypassword123
+```
 
-- `/palworld/data` - Save games and world data
-- `/palworld/config` - Server configuration files
+### Higher Player Count
+```yaml
+environment:
+  - MAX_PLAYERS=20  # Max recommended: 32
+```
 
-## 🎮 Server Management
+### Auto-Update Server
+```yaml
+environment:
+  - UPDATE_ON_START=true
+```
 
-### RCON Commands
-
-Connect to your server using an RCON client on port 25575 with the admin password.
-
-Common commands:
-- `Info` - Server information
-- `ShowPlayers` - List online players
-- `KickPlayer <SteamID>` - Kick a player
-- `BanPlayer <SteamID>` - Ban a player
-- `Save` - Save the world
-- `Shutdown <Seconds> <MessageText>` - Shutdown server
+## 🛠️ Management Commands
 
 ### View Server Logs
-
 ```bash
-docker logs palworld-server
+docker-compose logs -f palworld-server
+```
+
+### Stop Server
+```bash
+docker-compose down
+```
+
+### Restart Server
+```bash
+docker-compose restart palworld-server
 ```
 
 ### Update Server
-
 ```bash
-docker restart palworld-server
+docker-compose pull
+docker-compose up -d
 ```
 
-Or set `UPDATE_ON_START=true` in your environment variables.
-
-## ⚙️ Configuration
-
-### Custom Configuration
-
-You can mount your own `PalWorldSettings.ini` file:
-
+### Backup Save Data
 ```bash
--v /path/to/your/PalWorldSettings.ini:/palworld/config/PalWorldSettings.ini
+docker run --rm -v palworld_palworld_data:/data -v $(pwd):/backup alpine tar czf /backup/palworld-backup-$(date +%Y%m%d).tar.gz -C /data .
 ```
 
-### Advanced Settings
+## 🔧 RCON Management (Advanced)
 
-To modify game settings beyond environment variables, edit the `PalWorldSettings.ini` file in your config volume or create a custom one.
+Connect using an RCON client to `YOUR_SERVER_IP:25575` with your admin password.
 
-## 🐛 Troubleshooting
+**Useful commands:**
+- `Info` - Server information
+- `ShowPlayers` - List players
+- `Save` - Manual save
+- `Shutdown 30 Server restarting in 30 seconds` - Scheduled shutdown
+
+## 🆘 Troubleshooting
 
 ### Server won't start
-- Check if ports are available and not blocked by firewall
-- Ensure you have enough disk space
-- Check logs with `docker logs palworld-server`
-
-### Can't connect to server
-- Verify port forwarding is set up correctly
-- Check if the server is actually running: `docker ps`
-- Make sure you're using the correct IP and port
-
-### Performance issues
-- Increase container memory limits
-- Consider using SSD storage for better I/O performance
-- Monitor system resources
-
-## 🔄 Updates
-
-To update the server:
-
-1. Stop the container: `docker stop palworld-server`
-2. Pull the latest image: `docker pull yourusername/palworld-server:latest`
-3. Start the container: `docker start palworld-server`
-
-Or use the `UPDATE_ON_START=true` environment variable.
-
-## 📦 Building from Source
-
 ```bash
-git clone <your-repo-url>
-cd palworld-docker
-docker build -t palworld-server .
+# Check logs for errors
+docker-compose logs palworld-server
+
+# Check if ports are in use
+netstat -tulpn | grep :8211
 ```
 
-## 🤝 Contributing
+### Can't connect
+- Verify firewall allows ports 8211-8213 UDP
+- Check if server is running: `docker-compose ps`
+- Confirm your external IP if connecting from outside
 
-Feel free to submit issues and pull requests to improve this Docker image.
+### Performance issues
+- Increase memory limit in docker-compose.yml
+- Use SSD storage for better performance
+- Monitor resources: `docker stats palworld-server`
 
-## 📄 License
+## 📁 File Locations
 
-This project is licensed under the MIT License.
+- **Save Games**: Docker volume `palworld_data`
+- **Configuration**: Docker volume `palworld_config`
+- **Logs**: `docker-compose logs palworld-server`
 
-## ⚠️ Disclaimer
+## 🔄 Need Help?
 
-This is an unofficial Docker image for Palworld. Palworld is developed by Pocketpair, Inc. This Docker image is not affiliated with or endorsed by Pocketpair, Inc.
+- Check the [full documentation](https://hub.docker.com/r/crezty/palworld-server)
+- Report issues on [GitHub](https://github.com/yourusername/palworld-docker/issues)
+
+---
+
+**That's it! Your Palworld server should now be running and ready for players!** 🎉

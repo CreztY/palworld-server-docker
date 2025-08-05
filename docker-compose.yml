@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  palworld-server:
+    build: .
+    container_name: palworld-server
+    restart: unless-stopped
+    ports:
+      - "8211:8211/udp"
+      - "8212:8212/udp" 
+      - "8213:8213/udp"
+      - "25575:25575/tcp"  # RCON Port
+    volumes:
+      - palworld_data:/palworld/data
+      - palworld_config:/palworld/config
+    environment:
+      - SERVER_NAME=My Palworld Server
+      - SERVER_DESCRIPTION=A Docker-based Palworld server
+      - SERVER_PASSWORD=
+      - ADMIN_PASSWORD=admin123
+      - MAX_PLAYERS=32
+      - PUBLIC_PORT=8211
+      - RCON_ENABLED=true
+      - RCON_PORT=25575
+      - UPDATE_ON_START=false
+      - RECREATE_CONFIG=false
+    stdin_open: true
+    tty: true
+
+volumes:
+  palworld_data:
+    driver: local
+  palworld_config:
+    driver: local
